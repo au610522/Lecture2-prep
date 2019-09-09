@@ -1,0 +1,140 @@
+---
+title: "Lecture 2 prep"
+author: "Josephine S Brunsgaard"
+date: "9/9/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+
+pacman::p_load(tidyverse)
+```
+
+#Creating the data 
+
+```{r}
+pitch = c(233,204,242,130,112,142)
+sex = c(rep("female",3),rep("male",3))
+
+my.df = data.frame(sex,pitch)
+```
+
+#Creating the liniar model
+
+```{r}
+xmdl = lm(pitch ~ sex, my.df)
+
+summary(xmdl)
+
+mean(my.df[my.df$sex=="female",]$pitch)
+```
+#Creating it with foucs on age
+
+```{r}
+age = c(14,23,35,48,52,67)
+pitch = c(252,244,240,233,212,204)
+my.df = data.frame(age,pitch)
+xmdl = lm(pitch ~ age, my.df)
+summary(xmdl)
+```
+
+```{r}
+my.df$age.c = my.df$age - mean(my.df$age)
+xmdl = lm(pitch ~ age.c, my.df)
+summary(xmdl)
+```
+
+```{r}
+plot(fitted(xmdl),residuals(xmdl))^2
+```
+
+```{r}
+hist(residuals(xmdl))
+```
+
+```{r}
+qqnorm(residuals(xmdl))
+```
+
+```{r}
+dfbeta(xmdl)
+```
+
+## Part 2
+
+# Mixed models 
+
+```{r}
+p_load(lme4)
+```
+
+```{r}
+politeness= read.csv("http://www.bodowinter.com/tutorial/politeness_data.csv")
+
+which(is.na(politeness)==T)
+
+boxplot(frequency ~ attitude*gender,
+col=c("white","lightgray"),politeness)
+
+```
+```{r}
+politeness.model = lmer(frequency ~ attitude +
+(1|subject) + (1|scenario), data=politeness)
+
+summary(politeness.model)
+```
+
+#Adding sex to the model
+
+```{r}
+politeness.model = lmer(frequency ~ attitude +
+gender + (1|subject) +
+(1|scenario), data=politeness)
+
+summary(politeness.model)
+```
+
+# Creating a null model
+```{r}
+politeness.null = lmer(frequency ~ gender +
+(1|subject) + (1|scenario), data=politeness,
+REML=FALSE)
+
+politeness.model = lmer(frequency ~ attitude +
+gender +
+(1|subject) + (1|scenario), data=politeness,
+REML=FALSE)
+
+anova(politeness.null,politeness.model)
+
+```
+
+```{r}
+coef(politeness.model)
+```
+
+```{r}
+politeness.model = lmer(frequency ~ attitude +
+gender + (1+attitude|subject) +
+(1+attitude|scenario),
+data=politeness,
+REML=FALSE)
+
+summary(politeness.model)
+
+coef(politeness.model)
+```
+
+the p value of the new model
+
+```{r}
+politeness.null = lmer(frequency ~ gender +
+(1+attitude|subject) + (1+attitude|scenario),
+data=politeness, REML=FALSE)
+
+anova(politeness.null,politeness.model)
+```
+
